@@ -1,6 +1,6 @@
 """Python client class for interacting with Amazon Alexa Voice Service (AVS).
 """
-import settings
+import ConfigParser
 import requests
 import json
 import uuid
@@ -8,11 +8,47 @@ import os
 import re
 from requests_futures.sessions import FuturesSession
 
+# Read the alexa_client.ini config file
+config = ConfigParser.ConfigParser()
+config.read([
+    'config/alexa_client.ini',
+    os.path.expanduser('~/.alexa_client.ini')
+])
+
+def validate_config():
+    required = {
+        'avs': ['client_id', 'client_secret', 'refresh_token'],
+        'misc': ['temp_dir']
+    }
+    # Validate required sections
+    for section in required.keys():
+        if not config.has_section(section):
+            raise ValueError("Missing section '[{section}]' in " \
+                             "alexa_client.ini file".format(section=section))
+
+    # Validate required options
+    for section, opts in required.iteritems():
+        for opt in opts:
+            if not config.has_option(section, opt):
+                raise ValueError("Missing option in alexa_client.ini file: " \
+                                 "Section '[{}]', " \
+                                 "Option '{}'".format(section, opt))
+            if not config.get(section, opt):
+                raise ValueError("Missing option value in alexa_client.ini " \
+                                 "file: " \
+                                 "Section '[{}]', " \
+                                 "Option '{}'".format(section, opt))
+
 
 class AlexaClient(object):
     def __init__(self, token=None, *args, **kwargs):
         self._token = token
-        os.system("mkdir -p {}".format(settings.TEMP_DIR))
+        validate_config()
+        self._client_id = config.get('avs', 'client_id')
+        self._client_secret = config.get('avs', 'client_secret')
+        self._refresh_token = config.get('avs', 'refresh_token')
+        self.temp_dir = config.get('misc', 'temp_dir')
+        os.system("mkdir -p {}".format(self.temp_dir))
 
     def get_token(self, refresh=False):
         """Returns AVS access token.
@@ -32,9 +68,9 @@ class AlexaClient(object):
             return self._token
         # Prepare request payload
         payload = {
-            "client_id" : settings.CLIENT_ID,
-            "client_secret" : settings.CLIENT_SECRET,
-            "refresh_token" : settings.REFRESH_TOKEN,
+            "client_id" : self._client_id,
+            "client_secret" : self._client_secret,
+            "refresh_token" : self._refresh_token,
             "grant_type" : "refresh_token"
         }
         url = "https://api.amazon.com/auth/o2/token"
@@ -95,7 +131,7 @@ class AlexaClient(object):
             Path (str) to where the audio file is saved.
         """
         if not save_to:
-            save_to = "{}/{}.mp3".format(settings.TEMP_DIR, uuid.uuid4())
+            save_to = "{}/{}.mp3".format(self.temp_dir, uuid.uuid4())
         with open(save_to, 'wb') as f:
             if res.status_code == requests.codes.ok:
                 for v in res.headers['content-type'].split(";"):
@@ -108,8 +144,8 @@ class AlexaClient(object):
                 f.write(audio)
                 return save_to
             # Raise exception for the HTTP status code
-            print "AVS returned error: {}: {}".format(
-                res.status_code, res.content)
+            print "AVS returned error: Status: {}, Text: {}".format(
+                res.status_code, res.text)
             res.raise_for_status()
 
     def ask(self, audio_file, save_to=None):
@@ -213,6 +249,6 @@ class AlexaClient(object):
     def clean():
         """Cleans up temporary files.
 
-        Deletes all files and directories in the `settings.TEMP_DIR`.
+        Deletes all files and directories in the `config.TEMP_DIR`.
         """
-        os.system('rm -r {}/*'.format(settings.TEMP_DIR))
+        os.system('rm -r {}/*'.format(self.temp_dir))
