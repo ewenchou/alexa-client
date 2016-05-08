@@ -16,39 +16,18 @@ config.read([
     os.path.expanduser('~/.alexa_client.ini')
 ])
 
-def validate_config():
-    required = {
-        'avs': ['client_id', 'client_secret', 'refresh_token'],
-        'misc': ['temp_dir']
-    }
-    # Validate required sections
-    for section in required.keys():
-        if not config.has_section(section):
-            raise ValueError("Missing section '[{section}]' in " \
-                             "alexa_client.ini file".format(section=section))
-
-    # Validate required options
-    for section, opts in required.iteritems():
-        for opt in opts:
-            if not config.has_option(section, opt):
-                raise ValueError("Missing option in alexa_client.ini file: " \
-                                 "Section '[{}]', " \
-                                 "Option '{}'".format(section, opt))
-            if not config.get(section, opt):
-                raise ValueError("Missing option value in alexa_client.ini " \
-                                 "file: " \
-                                 "Section '[{}]', " \
-                                 "Option '{}'".format(section, opt))
-
 
 class AlexaClient(object):
     def __init__(self, token=None, *args, **kwargs):
         self._token = token
-        validate_config()
+        AlexaClient.validate_config()
         self._client_id = config.get('avs', 'client_id')
         self._client_secret = config.get('avs', 'client_secret')
         self._refresh_token = config.get('avs', 'refresh_token')
-        self.temp_dir = config.get('misc', 'temp_dir')
+        if config.has_section('misc') and config.has_option('misc', 'temp_dir'):
+            self.temp_dir = config.get('misc', 'temp_dir')
+        else:
+            self.temp_dir = '/tmp/alexa-client'
         os.system("mkdir -p {}".format(self.temp_dir))
 
     def get_token(self, refresh=False):
@@ -175,6 +154,12 @@ class AlexaClient(object):
                 ('file', ('audio', in_f, 'audio/L16; rate=16000; channels=1'))
             ]
             res = requests.post(url, headers=headers, files=files)
+            # Check for HTTP 403
+            if res.status_code == 403:
+                # Try to refresh auth token
+                self.get_token(refresh=True)
+                # Resend request
+                res = requests.post(url, headers=headers, files=files)
             return self.save_response_audio(res, save_to)
 
     def ask_multiple(self, input_list):
@@ -202,6 +187,8 @@ class AlexaClient(object):
         futures = []
 
         try:
+            # Refresh token to prevent HTTP 403
+            self.get_token(refresh=True)
             for inp in input_list:
                 # Check if input is a tuple
                 if isinstance(inp, tuple):
@@ -253,3 +240,27 @@ class AlexaClient(object):
         Deletes all files and directories in the `config.TEMP_DIR`.
         """
         os.system('rm -r {}/*'.format(self.temp_dir))
+
+    @classmethod
+    def validate_config(cls):
+        required = {
+            'avs': ['client_id', 'client_secret', 'refresh_token']
+        }
+        # Validate required sections
+        for section in required.keys():
+            if not config.has_section(section):
+                raise ValueError("Missing section '[{section}]' in " \
+                                 "alexa_client.ini file".format(section=section))
+
+        # Validate required options
+        for section, opts in required.iteritems():
+            for opt in opts:
+                if not config.has_option(section, opt):
+                    raise ValueError("Missing option in alexa_client.ini file: " \
+                                     "Section '[{}]', " \
+                                     "Option '{}'".format(section, opt))
+                if not config.get(section, opt):
+                    raise ValueError("Missing option value in alexa_client.ini " \
+                                     "file: " \
+                                     "Section '[{}]', " \
+                                     "Option '{}'".format(section, opt))
