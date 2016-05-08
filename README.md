@@ -10,11 +10,15 @@ For more information about AVS, visit [Amazon's Getting Started Guide](http://am
 
 ## Configuration
 
-Copy the sample config file from `config/alexa_client.ini` to your home directory as `~/.alexa_client.ini`.
+A sample configuration file is available in `config/alexa_client.ini`. You need to set values for your Alexa Voice Service variables before you can use `alexa_client`.
 
-    cp config/alexa_client.ini ~/.alexa_client.ini
+Alexa client will look for the configuration file in the following paths:
 
-Edit the file and add your own Alexa Voice Service values to the `[avs]` section.
+* `config/alexa_client.ini` (i.e. local path where alexa_client is installed)
+
+* `/opt/alexa-client/config/alexa_client.ini`
+
+* `~/.alexa_client.ini`
 
 ## Tests
 

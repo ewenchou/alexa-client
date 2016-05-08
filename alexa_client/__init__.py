@@ -12,6 +12,7 @@ from requests_futures.sessions import FuturesSession
 config = ConfigParser.ConfigParser()
 config.read([
     'config/alexa_client.ini',
+    '/opt/alexa-client/config/alexa_client.ini',
     os.path.expanduser('~/.alexa_client.ini')
 ])
 
