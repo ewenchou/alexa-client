@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='alexa_client',
-      version='0.2',
+      version='0.3',
       description="Python client for Amazon's Alexa Voice Service",
       url='',
       author='Ewen Chou',
