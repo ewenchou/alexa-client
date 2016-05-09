@@ -158,6 +158,8 @@ class AlexaClient(object):
             if res.status_code == 403:
                 # Try to refresh auth token
                 self.get_token(refresh=True)
+                # Refresh headers
+                url, headers, request_data = self.get_request_params()
                 # Resend request
                 res = requests.post(url, headers=headers, files=files)
             return self.save_response_audio(res, save_to)
