@@ -1,4 +1,4 @@
-# alexa-client
+# Alexa Client
 
 Python client for Amazon's Alexa Voice Service (AVS). Read about it on my [blog post](http://ewenchou.github.io/blog/2016/03/20/alexa-voice-service/).
 
@@ -6,19 +6,22 @@ For more information about AVS, visit [Amazon's Getting Started Guide](http://am
 
 ## Installation
 
-    python setup.py install
+1. Clone this repository
 
-## Configuration
+  `git clone https://github.com/ewenchou/alexa-client.git`
 
-A sample configuration file is available in `config/alexa_client.ini`. You need to set values for your Alexa Voice Service variables before you can use `alexa_client`.
+2. Configure settings
 
-Alexa client will look for the configuration file in the following paths:
+  Set values for your Alexa Voice Service variables in `alexa_client/settings.py`
 
-* `config/alexa_client.ini` (i.e. local path where alexa_client is installed)
+3. Install requirements
 
-* `/opt/alexa-client/config/alexa_client.ini`
+  `pip install -r requirements.txt`
 
-* `~/.alexa_client.ini`
+
+4. Install alexa_client
+
+  `python setup.py install`
 
 ## Tests
 
