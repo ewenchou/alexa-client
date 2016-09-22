@@ -22,7 +22,7 @@ See the **Authorization Code Grant** section below for an example of how to do t
 
 2. Configure settings. Set the `PRODUCT_ID`, `CLIENT_ID`,  `CLIENT_SECRET`, and `REFRESH_TOKEN` values in `alexa_client/settings.py`. 
 
-    *Note: If you do not have a refresh token, see the **Authorization Code Grant** section below for an example of how to get one.*
+    *Note: If you do not have a refresh token, see the __Authorization Code Grant__ section below for an example of how to get one.*
 
 3. Install requirements
 
@@ -57,7 +57,7 @@ In order to authorize a client, you will also need to configure the **Web Settin
 3. Click on the **Web Settings** tab
 4. Click on the **Edit** button and add the following:
 
-    * Allowed Origins: `http://localhost:3000`
+    * Allowed Origins: `http://localhost:3000/`
     * Allowed Return URLs: `http://localhost:3000/authresponse`
 5. Click the **Save** button to save the settings.
 
