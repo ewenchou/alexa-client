@@ -222,6 +222,8 @@ class AlexaClient(object):
                 save_to = self.save_response_audio(res, name_out)
                 saved_filenames.append(save_to)
             return saved_filenames
+        except Exception as e:
+            print str(e)
         finally:
             # Close all file handlers
             for f in files_to_close:
