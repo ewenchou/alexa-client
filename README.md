@@ -46,7 +46,7 @@ You should have followed [Amazon's Getting Started Guide](http://amzn.to/1Uui0QW
 
 You should now have the following values and they should be saved in `alexa_client/settings.py`:
 
-* Product ID
+* Device Type ID
 * Client ID
 * Client Secret
 
@@ -60,6 +60,10 @@ In order to authorize a client, you will also need to configure the **Web Settin
     * Allowed Origins: `http://localhost:3000/`
     * Allowed Return URLs: `http://localhost:3000/authresponse`
 5. Click the **Save** button to save the settings.
+
+Install the requirements for `auth_web.py`:
+
+        sudo pip install -r auth_web_requirements.txt
 
 Now you can run the `auth_web.py` script.
 

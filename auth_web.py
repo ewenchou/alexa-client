@@ -4,7 +4,7 @@ import os
 import urllib
 import cherrypy
 import requests
-from alexa_client.settings import PRODUCT_ID, CLIENT_ID, CLIENT_SECRET 
+from alexa_client.settings import DEVICE_TYPE_ID, CLIENT_ID, CLIENT_SECRET 
 
 
 class Start(object):
@@ -12,7 +12,7 @@ class Start(object):
         scope = "alexa_all"
         sd = json.dumps({
             "alexa:all": {
-                "productID": PRODUCT_ID,
+                "productID": DEVICE_TYPE_ID,
                 "productInstanceAttributes": {
                     "deviceSerialNumber": "001"
                 }
