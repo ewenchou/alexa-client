@@ -229,8 +229,7 @@ class AlexaClient(object):
             for f in files_to_close:
                 f.close()
 
-    @staticmethod
-    def clean():
+    def clean(self):
         """
         Deletes all files and directories in the temporary directory.
         """
