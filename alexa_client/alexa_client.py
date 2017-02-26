@@ -110,9 +110,12 @@ class AlexaClient(object):
                     if re.match('.*boundary.*', v):
                         boundary =  v.split("=")[1]
                 response_data = res.content.split(boundary)
+                audio = None
                 for d in response_data:
                     if (len(d) >= 1024):
                         audio = d.split('\r\n\r\n')[1].rstrip('--')
+                if audio is None:
+                    raise RuntimeError("Failed to save response audio")
                 f.write(audio)
                 return save_to
             # Raise exception for the HTTP status code
