@@ -1,26 +1,25 @@
 """
 Python client class for interacting with Amazon Alexa Voice Service (AVS).
 """
-import settings
-import requests
 import json
-import uuid
-import os
 import re
+import requests
 from requests_futures.sessions import FuturesSession
+import settings
+import shutil
+import tempfile
+import uuid
 
 
 class AlexaClient(object):
     def __init__(self, token=None, client_id=settings.CLIENT_ID,
-            client_secret=settings.CLIENT_SECRET,
-            refresh_token=settings.REFRESH_TOKEN,
-            temp_dir=settings.TEMP_DIR, *args, **kwargs):
+                 client_secret=settings.CLIENT_SECRET,
+                 refresh_token=settings.REFRESH_TOKEN, *args, **kwargs):
         self._token = token
         self._client_id = client_id
         self._client_secret = client_secret
         self._refresh_token = refresh_token
-        self.temp_dir = temp_dir
-        os.system("mkdir -p {}".format(self.temp_dir))
+        self.temp_dir = tempfile.mkdtemp()
 
     def get_token(self, refresh=False):
         """Returns AVS access token.
@@ -40,10 +39,10 @@ class AlexaClient(object):
             return self._token
         # Prepare request payload
         payload = {
-            "client_id" : self._client_id,
-            "client_secret" : self._client_secret,
-            "refresh_token" : self._refresh_token,
-            "grant_type" : "refresh_token"
+            "client_id": self._client_id,
+            "client_secret": self._client_secret,
+            "refresh_token": self._refresh_token,
+            "grant_type": "refresh_token"
         }
         url = "https://api.amazon.com/auth/o2/token"
         res = requests.post(url, data=payload)
@@ -65,7 +64,7 @@ class AlexaClient(object):
         """
         url = "https://access-alexa-na.amazon.com/v1"
         url += "/avs/speechrecognizer/recognize"
-        headers = {'Authorization' : 'Bearer %s' % self.get_token()}
+        headers = {'Authorization': 'Bearer %s' % self.get_token()}
         request_data = {
             "messageHeader": {
                 "deviceContext": [
@@ -108,7 +107,7 @@ class AlexaClient(object):
             if res.status_code == requests.codes.ok:
                 for v in res.headers['content-type'].split(";"):
                     if re.match('.*boundary.*', v):
-                        boundary =  v.split("=")[1]
+                        boundary = v.split("=")[1]
                 response_data = res.content.split(boundary)
                 audio = None
                 for d in response_data:
@@ -119,8 +118,8 @@ class AlexaClient(object):
                 f.write(audio)
                 return save_to
             # Raise exception for the HTTP status code
-            print "AVS returned error: Status: {}, Text: {}".format(
-                res.status_code, res.text)
+            print("AVS returned error: Status: {}, Text: {}".format(
+                res.status_code, res.text))
             res.raise_for_status()
 
     def ask(self, audio_file, save_to=None):
@@ -226,7 +225,7 @@ class AlexaClient(object):
                 saved_filenames.append(save_to)
             return saved_filenames
         except Exception as e:
-            print str(e)
+            print(str(e))
         finally:
             # Close all file handlers
             for f in files_to_close:
@@ -236,4 +235,4 @@ class AlexaClient(object):
         """
         Deletes all files and directories in the temporary directory.
         """
-        os.system('rm -r {}/*'.format(self.temp_dir))
+        shutil.rmtree(self.temp_dir)
